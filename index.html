@@ -259,6 +259,11 @@
             </div>
 
             <div class="form-group">
+                <label for="apiKey">API Key (Bao mat Worker)</label>
+                <input type="text" id="apiKey" placeholder="Nhap API Key de su dung proxy" required>
+            </div>
+
+            <div class="form-group">
                 <label for="datacenter">Data Center</label>
                 <select id="datacenter">
                     <option value="com">United States (zoho.com)</option>
@@ -354,6 +359,7 @@
             localStorage.setItem('zoho_client_secret', clientSecret);
             localStorage.setItem('zoho_datacenter', datacenter);
             localStorage.setItem('zoho_scopes', scopes.join(','));
+            localStorage.setItem('zoho_api_key', document.getElementById('apiKey').value.trim());
 
             // Tao URL xac thuc Zoho
             const authUrl = `https://accounts.zoho.${datacenter}/oauth/v2/auth?` +
@@ -377,6 +383,9 @@
             if (savedClientId) document.getElementById('clientId').value = savedClientId;
             if (savedClientSecret) document.getElementById('clientSecret').value = savedClientSecret;
             if (savedDatacenter) document.getElementById('datacenter').value = savedDatacenter;
+            
+            const savedApiKey = localStorage.getItem('zoho_api_key');
+            if (savedApiKey) document.getElementById('apiKey').value = savedApiKey;
         });
     </script>
 </body>

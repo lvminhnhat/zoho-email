@@ -1,9 +1,13 @@
+const VALID_API_KEYS = [
+  'zoho-oauth-2024-secret-key',
+]
+
 export default {
-  async fetch(request) {
+  async fetch(request, env) {
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, X-API-Key',
     }
 
     if (request.method === 'OPTIONS') {
@@ -19,7 +23,15 @@ export default {
 
     try {
       const body = await request.json()
-      const { client_id, client_secret, code, redirect_uri, datacenter, grant_type, refresh_token } = body
+      const { client_id, client_secret, code, redirect_uri, datacenter, grant_type, refresh_token, api_key } = body
+
+      const validKeys = env.API_KEYS ? env.API_KEYS.split(',') : VALID_API_KEYS
+      if (!api_key || !validKeys.includes(api_key)) {
+        return new Response(JSON.stringify({ error: 'Invalid or missing API key' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
 
       if (!client_id || !client_secret || !datacenter) {
         return new Response(JSON.stringify({ error: 'Missing required parameters' }), {

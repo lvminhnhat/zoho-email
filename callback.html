@@ -377,6 +377,7 @@
         const clientSecret = localStorage.getItem('zoho_client_secret');
         const datacenter = localStorage.getItem('zoho_datacenter') || 'com';
         const savedScopes = localStorage.getItem('zoho_scopes');
+        const apiKey = localStorage.getItem('zoho_api_key');
 
         // Lay callback URL
         const currentUrl = window.location.href.split('?')[0];
@@ -476,7 +477,8 @@
                         client_secret: clientSecret,
                         code: code,
                         redirect_uri: redirectUri,
-                        datacenter: datacenter
+                        datacenter: datacenter,
+                        api_key: apiKey
                     })
                 });
 
