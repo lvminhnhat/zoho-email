@@ -255,7 +255,7 @@
         <!-- Loading state -->
         <div id="loading" class="loading">
             <div class="spinner"></div>
-            <p>Dang xu ly xac thuc...</p>
+            <p id="loadingText">Dang xu ly xac thuc...</p>
         </div>
 
         <!-- Error state -->
@@ -462,7 +462,10 @@
         const PROXY_URL = 'https://zoho-email.minhnhat-coder.workers.dev';
 
         async function exchangeToken(code) {
+            document.getElementById('loadingText').textContent = 'Dang trao doi token voi Zoho...';
+            
             try {
+                console.log('Calling proxy:', PROXY_URL);
                 const response = await fetch(PROXY_URL, {
                     method: 'POST',
                     headers: {
@@ -477,7 +480,9 @@
                     })
                 });
 
+                console.log('Response status:', response.status);
                 const data = await response.json();
+                console.log('Response data:', data);
 
                 if (data.access_token) {
                     showResult(data);
@@ -494,25 +499,32 @@
         }
 
         // Main logic
-        window.addEventListener('load', function() {
+        (function() {
+            // Debug info
+            console.log('URL:', window.location.href);
+            console.log('Auth Code:', authCode);
+            console.log('Error:', error);
+            console.log('Client ID:', clientId ? 'Set' : 'Missing');
+            console.log('Client Secret:', clientSecret ? 'Set' : 'Missing');
+
             if (error) {
                 showError(urlParams.get('error_description') || error);
                 return;
             }
 
             if (!authCode) {
-                showError('Khong tim thay authorization code. Vui long thu lai tu dau.');
+                showError('Khong tim thay authorization code trong URL. Vui long thu lai tu dau.');
                 return;
             }
 
             if (!clientId || !clientSecret) {
-                showError('Thieu Client ID hoac Client Secret. Vui long quay lai trang chinh va nhap lai.');
+                showError('Thieu Client ID hoac Client Secret trong localStorage. Vui long quay lai trang chinh va nhap lai thong tin.');
                 return;
             }
 
-            // Trao doi token
+            // Trao doi token ngay lap tuc
             exchangeToken(authCode);
-        });
+        })();
     </script>
 </body>
 </html>
