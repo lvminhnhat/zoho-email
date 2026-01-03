@@ -459,25 +459,22 @@
             }
         }
 
+        const PROXY_URL = 'https://zoho-oauth-proxy.lvminhnhat.workers.dev';
+
         async function exchangeToken(code) {
-            const tokenUrl = `https://accounts.zoho.${datacenter}/oauth/v2/token`;
-
-            const params = new URLSearchParams({
-                grant_type: 'authorization_code',
-                client_id: clientId,
-                client_secret: clientSecret,
-                redirect_uri: redirectUri,
-                code: code
-            });
-
             try {
-                // Thu goi truc tiep (co the bi CORS block)
-                const response = await fetch(tokenUrl, {
+                const response = await fetch(PROXY_URL, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
+                        'Content-Type': 'application/json'
                     },
-                    body: params.toString()
+                    body: JSON.stringify({
+                        client_id: clientId,
+                        client_secret: clientSecret,
+                        code: code,
+                        redirect_uri: redirectUri,
+                        datacenter: datacenter
+                    })
                 });
 
                 const data = await response.json();
@@ -485,13 +482,13 @@
                 if (data.access_token) {
                     showResult(data);
                 } else if (data.error) {
-                    showError(data.error_description || data.error);
+                    console.log('Token exchange error:', data.error);
+                    showManualExchange(code);
                 } else {
                     showManualExchange(code);
                 }
             } catch (err) {
-                // CORS error - hien thi huong dan thu cong
-                console.log('CORS error, showing manual exchange:', err);
+                console.log('Proxy error, showing manual exchange:', err);
                 showManualExchange(code);
             }
         }
