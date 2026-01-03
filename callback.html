@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zoho OAuth Callback - Token Result</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e1e5e9;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-box {
+            background: #ffebee;
+            border: 1px solid #ef9a9a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .error-box h3 {
+            color: #c62828;
+            margin-bottom: 10px;
+        }
+
+        .error-box p {
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .success-box {
+            background: #e8f5e9;
+            border: 1px solid #a5d6a7;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .success-box h3 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+
+        .token-group {
+            margin-bottom: 20px;
+        }
+
+        .token-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #444;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .token-display {
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 14px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            word-break: break-all;
+            position: relative;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .token-display .token-text {
+            flex: 1;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #5a6fd6;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .info-value {
+            color: #333;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e1e5e9;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5d9;
+            box-shadow: none;
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+
+        .divider {
+            height: 1px;
+            background: #e1e5e9;
+            margin: 25px 0;
+        }
+
+        .warning-box {
+            background: #fff3e0;
+            border: 1px solid #ffcc80;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .warning-box h4 {
+            color: #e65100;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .warning-box p {
+            color: #555;
+            font-size: 0.85rem;
+        }
+
+        #result {
+            display: none;
+        }
+
+        .json-box {
+            background: #263238;
+            color: #aed581;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Zoho OAuth Callback</h1>
+        <p class="subtitle">Xu ly xac thuc va lay token</p>
+
+        <!-- Loading state -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Dang xu ly xac thuc...</p>
+        </div>
+
+        <!-- Error state -->
+        <div id="error" class="hidden">
+            <div class="error-box">
+                <h3>Loi xac thuc</h3>
+                <p id="errorMessage"></p>
+            </div>
+            <div class="actions">
+                <a href="index.html" class="btn">Thu lai</a>
+            </div>
+        </div>
+
+        <!-- Success state -->
+        <div id="result" class="hidden">
+            <div class="success-box">
+                <h3>Xac thuc thanh cong!</h3>
+                <p>Duoi day la cac token cua ban. Hay luu lai Refresh Token de su dung lau dai.</p>
+            </div>
+
+            <div class="token-group">
+                <label>Access Token</label>
+                <div class="token-display">
+                    <span class="token-text" id="accessToken"></span>
+                    <button class="copy-btn" onclick="copyToken('accessToken')">Copy</button>
+                </div>
+            </div>
+
+            <div class="token-group">
+                <label>Refresh Token (Quan trong - Luu lai!)</label>
+                <div class="token-display" style="background: #e8f5e9; border-color: #a5d6a7;">
+                    <span class="token-text" id="refreshToken"></span>
+                    <button class="copy-btn" style="background: #2e7d32;" onclick="copyToken('refreshToken')">Copy</button>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="token-group">
+                <label>Thong tin chi tiet</label>
+                <div class="info-row">
+                    <span class="info-label">Token Type</span>
+                    <span class="info-value" id="tokenType">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Expires In</span>
+                    <span class="info-value" id="expiresIn">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">API Domain</span>
+                    <span class="info-value" id="apiDomain">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Scopes</span>
+                    <span class="info-value" id="scopes">-</span>
+                </div>
+            </div>
+
+            <div class="token-group">
+                <label>JSON Response</label>
+                <pre class="json-box" id="jsonResponse"></pre>
+            </div>
+
+            <div class="warning-box">
+                <h4>Luu y bao mat</h4>
+                <p>
+                    - Refresh Token chi duoc cap mot lan. Hay luu lai can than!<br>
+                    - Khong chia se token voi nguoi khac<br>
+                    - Access Token het han sau khoang 1 gio, su dung Refresh Token de lay token moi
+                </p>
+            </div>
+
+            <div class="actions">
+                <a href="index.html" class="btn btn-secondary">Quay lai</a>
+                <button class="btn" onclick="copyAllTokens()">Copy tat ca</button>
+            </div>
+        </div>
+
+        <!-- Manual token exchange (fallback) -->
+        <div id="manualExchange" class="hidden">
+            <div class="error-box" style="background: #fff3e0; border-color: #ffcc80;">
+                <h3 style="color: #e65100;">Can trao doi token thu cong</h3>
+                <p>Do han che CORS, ban can trao doi authorization code thu cong. Su dung thong tin ben duoi:</p>
+            </div>
+
+            <div class="token-group">
+                <label>Authorization Code</label>
+                <div class="token-display">
+                    <span class="token-text" id="authCode"></span>
+                    <button class="copy-btn" onclick="copyToken('authCode')">Copy</button>
+                </div>
+            </div>
+
+            <div class="token-group">
+                <label>CURL Command (Chay trong terminal)</label>
+                <div class="token-display" style="background: #263238;">
+                    <span class="token-text" id="curlCommand" style="color: #aed581;"></span>
+                    <button class="copy-btn" onclick="copyToken('curlCommand')">Copy</button>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="token-group">
+                <label>Hoac dan ket qua JSON vao day:</label>
+                <textarea id="manualResponse" rows="6" style="width: 100%; padding: 14px; border: 2px solid #e1e5e9; border-radius: 8px; font-family: monospace; font-size: 0.85rem;" placeholder='{"access_token": "...", "refresh_token": "...", ...}'></textarea>
+            </div>
+
+            <div class="actions">
+                <a href="index.html" class="btn btn-secondary">Quay lai</a>
+                <button class="btn" onclick="parseManualResponse()">Phan tich ket qua</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Lay thong tin tu localStorage
+        const clientId = localStorage.getItem('zoho_client_id');
+        const clientSecret = localStorage.getItem('zoho_client_secret');
+        const datacenter = localStorage.getItem('zoho_datacenter') || 'com';
+        const savedScopes = localStorage.getItem('zoho_scopes');
+
+        // Lay callback URL
+        const currentUrl = window.location.href.split('?')[0];
+        const redirectUri = currentUrl;
+
+        // Parse URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const authCode = urlParams.get('code');
+        const error = urlParams.get('error');
+
+        function showError(message) {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('error').classList.remove('hidden');
+            document.getElementById('errorMessage').textContent = message;
+        }
+
+        function showResult(data) {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('result').style.display = 'block';
+
+            document.getElementById('accessToken').textContent = data.access_token || 'N/A';
+            document.getElementById('refreshToken').textContent = data.refresh_token || 'Khong co (co the da duoc cap truoc do)';
+            document.getElementById('tokenType').textContent = data.token_type || 'Bearer';
+            document.getElementById('expiresIn').textContent = data.expires_in ? `${data.expires_in} giay (~${Math.round(data.expires_in/60)} phut)` : 'N/A';
+            document.getElementById('apiDomain').textContent = data.api_domain || `https://mail.zoho.${datacenter}`;
+            document.getElementById('scopes').textContent = savedScopes || 'N/A';
+            document.getElementById('jsonResponse').textContent = JSON.stringify(data, null, 2);
+        }
+
+        function showManualExchange(code) {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('manualExchange').classList.remove('hidden');
+            document.getElementById('authCode').textContent = code;
+
+            const curlCmd = `curl -X POST "https://accounts.zoho.${datacenter}/oauth/v2/token" \\
+  -d "grant_type=authorization_code" \\
+  -d "client_id=${clientId}" \\
+  -d "client_secret=${clientSecret}" \\
+  -d "redirect_uri=${encodeURIComponent(redirectUri)}" \\
+  -d "code=${code}"`;
+
+            document.getElementById('curlCommand').textContent = curlCmd;
+        }
+
+        function copyToken(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Da copy!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+        }
+
+        function copyAllTokens() {
+            const accessToken = document.getElementById('accessToken').textContent;
+            const refreshToken = document.getElementById('refreshToken').textContent;
+            const text = `Access Token:\n${accessToken}\n\nRefresh Token:\n${refreshToken}`;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Da copy tat ca token!');
+            });
+        }
+
+        function parseManualResponse() {
+            try {
+                const response = document.getElementById('manualResponse').value;
+                const data = JSON.parse(response);
+                if (data.access_token) {
+                    document.getElementById('manualExchange').classList.add('hidden');
+                    showResult(data);
+                } else if (data.error) {
+                    alert('Loi: ' + (data.error_description || data.error));
+                } else {
+                    alert('Response khong hop le. Can co access_token.');
+                }
+            } catch (e) {
+                alert('JSON khong hop le. Vui long kiem tra lai.');
+            }
+        }
+
+        async function exchangeToken(code) {
+            const tokenUrl = `https://accounts.zoho.${datacenter}/oauth/v2/token`;
+
+            const params = new URLSearchParams({
+                grant_type: 'authorization_code',
+                client_id: clientId,
+                client_secret: clientSecret,
+                redirect_uri: redirectUri,
+                code: code
+            });
+
+            try {
+                // Thu goi truc tiep (co the bi CORS block)
+                const response = await fetch(tokenUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: params.toString()
+                });
+
+                const data = await response.json();
+
+                if (data.access_token) {
+                    showResult(data);
+                } else if (data.error) {
+                    showError(data.error_description || data.error);
+                } else {
+                    showManualExchange(code);
+                }
+            } catch (err) {
+                // CORS error - hien thi huong dan thu cong
+                console.log('CORS error, showing manual exchange:', err);
+                showManualExchange(code);
+            }
+        }
+
+        // Main logic
+        window.addEventListener('load', function() {
+            if (error) {
+                showError(urlParams.get('error_description') || error);
+                return;
+            }
+
+            if (!authCode) {
+                showError('Khong tim thay authorization code. Vui long thu lai tu dau.');
+                return;
+            }
+
+            if (!clientId || !clientSecret) {
+                showError('Thieu Client ID hoac Client Secret. Vui long quay lai trang chinh va nhap lai.');
+                return;
+            }
+
+            // Trao doi token
+            exchangeToken(authCode);
+        });
+    </script>
+</body>
+</html>

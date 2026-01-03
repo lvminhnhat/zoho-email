@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zoho Email OAuth Token Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #444;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .scopes-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .scope-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .scope-item:hover {
+            background: #e9ecef;
+        }
+
+        .scope-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .scope-item label {
+            margin: 0;
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .info-box {
+            background: #f0f7ff;
+            border: 1px solid #b3d4fc;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 25px;
+        }
+
+        .info-box h3 {
+            color: #1a56db;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+        }
+
+        .info-box p {
+            color: #555;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        .info-box code {
+            background: #e1e5e9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.8rem;
+        }
+
+        .callback-url {
+            background: #e8f5e9;
+            border: 1px solid #a5d6a7;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 25px;
+        }
+
+        .callback-url h3 {
+            color: #2e7d32;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+        }
+
+        .callback-url .url {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            word-break: break-all;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .callback-url .url span {
+            flex: 1;
+        }
+
+        .copy-btn {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+
+        .copy-btn:hover {
+            background: #1b5e20;
+        }
+
+        .divider {
+            height: 1px;
+            background: #e1e5e9;
+            margin: 25px 0;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 25px;
+            color: #888;
+            font-size: 0.8rem;
+        }
+
+        footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Zoho Email OAuth</h1>
+        <p class="subtitle">Lay nhanh Access Token va Refresh Token</p>
+
+        <div class="callback-url">
+            <h3>Callback URL (Them vao Zoho API Console)</h3>
+            <div class="url">
+                <span id="callbackUrl"></span>
+                <button class="copy-btn" onclick="copyCallbackUrl()">Copy</button>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <h3>Huong dan</h3>
+            <p>
+                1. Truy cap <a href="https://api-console.zoho.com/" target="_blank">Zoho API Console</a><br>
+                2. Tao Self Client hoac Server-based Application<br>
+                3. Them Callback URL o tren vao Authorized Redirect URIs<br>
+                4. Copy Client ID va Client Secret vao form ben duoi
+            </p>
+        </div>
+
+        <form id="oauthForm">
+            <div class="form-group">
+                <label for="clientId">Client ID</label>
+                <input type="text" id="clientId" placeholder="Nhap Client ID tu Zoho API Console" required>
+            </div>
+
+            <div class="form-group">
+                <label for="clientSecret">Client Secret</label>
+                <input type="text" id="clientSecret" placeholder="Nhap Client Secret tu Zoho API Console" required>
+            </div>
+
+            <div class="form-group">
+                <label for="datacenter">Data Center</label>
+                <select id="datacenter">
+                    <option value="com">United States (zoho.com)</option>
+                    <option value="eu">Europe (zoho.eu)</option>
+                    <option value="in">India (zoho.in)</option>
+                    <option value="com.cn">China (zoho.com.cn)</option>
+                    <option value="com.au">Australia (zoho.com.au)</option>
+                    <option value="jp">Japan (zoho.jp)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Scopes (Quyen truy cap)</label>
+                <div class="scopes-container">
+                    <div class="scope-item">
+                        <input type="checkbox" id="scope_mail_read" value="ZohoMail.messages.READ" checked>
+                        <label for="scope_mail_read">Doc email</label>
+                    </div>
+                    <div class="scope-item">
+                        <input type="checkbox" id="scope_mail_create" value="ZohoMail.messages.CREATE">
+                        <label for="scope_mail_create">Tao email</label>
+                    </div>
+                    <div class="scope-item">
+                        <input type="checkbox" id="scope_mail_all" value="ZohoMail.messages.ALL">
+                        <label for="scope_mail_all">Tat ca email</label>
+                    </div>
+                    <div class="scope-item">
+                        <input type="checkbox" id="scope_folders" value="ZohoMail.folders.ALL">
+                        <label for="scope_folders">Thu muc</label>
+                    </div>
+                    <div class="scope-item">
+                        <input type="checkbox" id="scope_accounts" value="ZohoMail.accounts.READ" checked>
+                        <label for="scope_accounts">Tai khoan</label>
+                    </div>
+                    <div class="scope-item">
+                        <input type="checkbox" id="scope_send" value="ZohoMail.messages.READ,ZohoMail.messages.CREATE">
+                        <label for="scope_send">Doc & Gui</label>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn">Bat dau xac thuc</button>
+        </form>
+
+        <footer>
+            <p>Du lieu duoc luu tru cuc bo tren trinh duyet cua ban</p>
+        </footer>
+    </div>
+
+    <script>
+        // Xac dinh callback URL dua tren domain hien tai
+        const currentUrl = window.location.href;
+        const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
+        const callbackUrl = baseUrl + 'callback.html';
+        document.getElementById('callbackUrl').textContent = callbackUrl;
+
+        function copyCallbackUrl() {
+            navigator.clipboard.writeText(callbackUrl).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                btn.textContent = 'Da copy!';
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                }, 2000);
+            });
+        }
+
+        // Luu thong tin vao localStorage khi submit
+        document.getElementById('oauthForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const clientId = document.getElementById('clientId').value.trim();
+            const clientSecret = document.getElementById('clientSecret').value.trim();
+            const datacenter = document.getElementById('datacenter').value;
+
+            // Thu thap cac scope da chon
+            const scopes = [];
+            document.querySelectorAll('.scopes-container input[type="checkbox"]:checked').forEach(cb => {
+                const scopeValues = cb.value.split(',');
+                scopeValues.forEach(scope => {
+                    if (!scopes.includes(scope)) {
+                        scopes.push(scope);
+                    }
+                });
+            });
+
+            if (scopes.length === 0) {
+                alert('Vui long chon it nhat mot scope!');
+                return;
+            }
+
+            // Luu vao localStorage
+            localStorage.setItem('zoho_client_id', clientId);
+            localStorage.setItem('zoho_client_secret', clientSecret);
+            localStorage.setItem('zoho_datacenter', datacenter);
+            localStorage.setItem('zoho_scopes', scopes.join(','));
+
+            // Tao URL xac thuc Zoho
+            const authUrl = `https://accounts.zoho.${datacenter}/oauth/v2/auth?` +
+                `response_type=code&` +
+                `client_id=${encodeURIComponent(clientId)}&` +
+                `scope=${encodeURIComponent(scopes.join(','))}&` +
+                `redirect_uri=${encodeURIComponent(callbackUrl)}&` +
+                `access_type=offline&` +
+                `prompt=consent`;
+
+            // Chuyen huong den trang xac thuc Zoho
+            window.location.href = authUrl;
+        });
+
+        // Load du lieu da luu truoc do (neu co)
+        window.addEventListener('load', function() {
+            const savedClientId = localStorage.getItem('zoho_client_id');
+            const savedClientSecret = localStorage.getItem('zoho_client_secret');
+            const savedDatacenter = localStorage.getItem('zoho_datacenter');
+
+            if (savedClientId) document.getElementById('clientId').value = savedClientId;
+            if (savedClientSecret) document.getElementById('clientSecret').value = savedClientSecret;
+            if (savedDatacenter) document.getElementById('datacenter').value = savedDatacenter;
+        });
+    </script>
+</body>
+</html>
