@@ -70,6 +70,27 @@ export default {
 
       const data = await response.json()
 
+      if (data.access_token) {
+        try {
+          const accountsUrl = `https://mail.zoho.${datacenter}/api/accounts`
+          const accountsResponse = await fetch(accountsUrl, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Zoho-oauthtoken ${data.access_token}`,
+            }
+          })
+          const accountsData = await accountsResponse.json()
+          
+          if (accountsData.data && accountsData.data.length > 0) {
+            data.account_id = accountsData.data[0].accountId
+            data.email = accountsData.data[0].emailAddress
+            data.display_name = accountsData.data[0].displayName
+          }
+        } catch (accountErr) {
+          data.account_error = 'Could not fetch account info'
+        }
+      }
+
       return new Response(JSON.stringify(data), {
         status: response.status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
